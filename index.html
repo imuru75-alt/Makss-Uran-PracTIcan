@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЭКОМЯСО — React каталог + корзина</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+  <style> body { font-family: 'Inter', sans-serif; } .no-scroll { overflow: hidden; } </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <header class="fixed w-full bg-white/70 backdrop-blur z-50 border-b">
+    <div class="max-w-6xl mx-auto flex justify-between items-center p-4">
+      <div class="text-xl font-semibold">ЭКОМЯСО</div>
+      <nav class="hidden md:flex gap-6 text-sm">
+        <a href="#products">Продукты</a>
+        <a href="#reviews">Отзывы</a>
+        <a href="#contact">Контакты</a>
+      </nav>
+      <div id="cart-button-container"></div>
+    </div>
+  </header>
+
+  <section class="pt-32 pb-20 text-center">
+    <h1 class="text-5xl font-semibold mb-4">Натуральное мясо</h1>
+    <p class="text-gray-500 mb-6">Минимализм. Качество. Без компромиссов.</p>
+    <button onclick="openModal()" class="bg-black text-white px-6 py-3 rounded-xl hover:opacity-80 transition">Связаться</button>
+  </section>
+
+  <section id="products" class="max-w-6xl mx-auto px-4 pb-20">
+    <div id="catalog-root"></div>
+  </section>
+
+  <section id="reviews" class="bg-white py-20">
+    <div class="max-w-xl mx-auto text-center">
+      <h2 class="text-2xl font-semibold mb-8">Отзывы</h2>
+      <div class="relative overflow-hidden">
+        <div id="slider" class="flex transition">
+          <div class="min-w-full px-4"><div class="bg-gray-50 p-6 rounded-2xl shadow-sm">🔥 Лучшее мясо, что пробовал</div></div>
+          <div class="min-w-full px-4"><div class="bg-gray-50 p-6 rounded-2xl shadow-sm">👍 Доставка очень быстрая</div></div>
+          <div class="min-w-full px-4"><div class="bg-gray-50 p-6 rounded-2xl shadow-sm">💯 Качество топ</div></div>
+        </div>
+      </div>
+      <div class="mt-4 flex justify-center gap-2">
+        <button onclick="prev()" class="px-3 py-1 bg-gray-200 rounded">←</button>
+        <button onclick="next()" class="px-3 py-1 bg-gray-200 rounded">→</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="max-w-4xl mx-auto px-4 py-20">
+    <h2 class="text-2xl font-semibold mb-8 text-center">Связаться</h2>
+    <div class="bg-white p-8 rounded-2xl shadow-sm grid md:grid-cols-2 gap-6">
+      <div class="space-y-2 text-gray-500"><p>📞 +7 999 123-45-67</p><p>✉️ eco@gmail.com</p><p>📍 Москва</p></div>
+      <form onsubmit="sendForm(event)" class="flex flex-col gap-3">
+        <input required placeholder="Имя" class="border p-2 rounded-lg">
+        <input required type="email" placeholder="Email" class="border p-2 rounded-lg">
+        <textarea required placeholder="Сообщение" class="border p-2 rounded-lg"></textarea>
+        <button class="bg-black text-white py-2 rounded-lg">Отправить</button>
+      </form>
+    </div>
+  </section>
+
+  <footer class="text-center text-gray-400 py-6 text-sm">© 2026 ЭКОМЯСО</footer>
+
+  <div id="modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 pointer-events-none transition-opacity z-50">
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+      <h3 class="text-2xl font-bold mb-4">Связаться с нами</h3>
+      <form id="contactForm" class="flex flex-col gap-4">
+        <input type="text" placeholder="Имя" class="border p-3 rounded-lg" required>
+        <input type="email" placeholder="Email" class="border p-3 rounded-lg" required>
+        <textarea placeholder="Сообщение" class="border p-3 rounded-lg" required></textarea>
+        <button type="submit" class="bg-black text-white py-2 rounded-lg hover:opacity-80 transition">Отправить</button>
+      </form>
+      <button onclick="closeModal()" class="mt-4 text-gray-500 hover:text-gray-800 transition">Закрыть</button>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 opacity-0 pointer-events-none transition-opacity">
+    <div class="bg-white p-8 rounded-2xl shadow-xl max-w-lg text-center">
+      <h3 class="text-2xl font-bold mb-2">Заявка успешно отправлена!</h3>
+      <p class="text-gray-700 text-lg">Мы получили вашу заявку. Наш менеджер свяжется с вами. Спасибо, что выбрали ЭКОМЯСО!</p>
+      <button onclick="hideToast()" class="mt-4 px-6 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition">Закрыть</button>
+    </div>
+  </div>
+
+  <script>
+    let i = 0;
+    const slider = document.getElementById('slider');
+    function next() { i = (i + 1) % 3; update(); }
+    function prev() { i = (i - 1 + 3) % 3; update(); }
+    function update() { slider.style.transform = `translateX(-${i * 100}%)`; }
+    function openModal() { const modal = document.getElementById('modal'); modal.classList.remove('opacity-0', 'pointer-events-none'); modal.classList.add('opacity-100'); }
+    function closeModal() { const modal = document.getElementById('modal'); modal.classList.add('opacity-0', 'pointer-events-none'); modal.classList.remove('opacity-100'); }
+    function showToast() { const toast = document.getElementById('toast'); toast.classList.remove('opacity-0', 'pointer-events-none'); toast.classList.add('opacity-100'); setTimeout(hideToast, 3000); }
+    function hideToast() { const toast = document.getElementById('toast'); toast.classList.add('opacity-0', 'pointer-events-none'); toast.classList.remove('opacity-100'); }
+    function sendForm(e) { e.preventDefault(); showToast(); e.target.reset(); }
+    document.getElementById('contactForm')?.addEventListener('submit', function(e) { e.preventDefault(); showToast(); closeModal(); e.target.reset(); });
+  </script>
+
+  <script type="text/babel">
+    // Продукты
+    const PRODUCTS = [
+      { id: 1, name: "Говядина", category: "beef", price: 500, image: "https://images.unsplash.com/photo-1603048297172-c92544798d5a?w=400&h=300&fit=crop", origin: "Абердин-ангус", bgColor: "#dc2626" },
+      { id: 2, name: "Свинина", category: "pork", price: 450, image: "https://www.gurmanych.ru/seika_svinaja.jpg", origin: "фермерская", bgColor: "#ea580c" },
+      { id: 3, name: "Куриное филе", category: "poultry", price: 320, image: "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=400&h=300&fit=crop", origin: "свободный выгул", bgColor: "#fbbf24" },
+      { id: 4, name: "Баранина", category: "lamb", price: 890, image: "https://efspb.ru/upload/iblock/85b/0awxnmb6gtar9igzobg5n0ehxzgps4xh.jpg", origin: "Новая Зеландия", bgColor: "#8b5cf6" },
+      { id: 5, name: "Индейка", category: "poultry", price: 420, image: "https://static.tildacdn.com/tild3765-3765-4762-a339-653233663934/scale_1200.jpg", origin: "эко-ферма", bgColor: "#10b981" },
+      { id: 6, name: "Говядина стейк", category: "beef", price: 1250, image: "https://static.tildacdn.com/tild3230-3061-4362-b134-646131663534/photo.jpg", origin: "мраморная", bgColor: "#ef4444" }
+    ];
+
+   
+    const ProductImage = ({ src, alt, bgColor, name }) => {
+      const [imgError, setImgError] = React.useState(false);
+      if (imgError) {
+        return (
+          <div className="rounded-xl mb-3 w-full h-48 flex items-center justify-center text-white font-bold text-xl" style={{ backgroundColor: bgColor }}>
+            {name}
+          </div>
+        );
+      }
+      return <img className="rounded-xl mb-3 w-full h-48 object-cover" src={src} alt={alt} onError={() => setImgError(true)} />;
+    };
+
+    // Reducer для корзины
+    const cartReducer = (state, action) => {
+      switch (action.type) {
+        case 'ADD_ITEM': {
+          const existing = state.items.find(item => item.id === action.payload.id);
+          if (existing) return { ...state, items: state.items.map(item => item.id === action.payload.id ? { ...item, quantity: item.quantity + 1 } : item) };
+          return { ...state, items: [...state.items, { ...action.payload, quantity: 1 }] };
+        }
+        case 'REMOVE_ITEM': return { ...state, items: state.items.filter(item => item.id !== action.payload) };
+        case 'INCREASE': return { ...state, items: state.items.map(item => item.id === action.payload ? { ...item, quantity: item.quantity + 1 } : item) };
+        case 'DECREASE': {
+          const existingItem = state.items.find(item => item.id === action.payload);
+          if (existingItem && existingItem.quantity === 1) return { ...state, items: state.items.filter(item => item.id !== action.payload) };
+          return { ...state, items: state.items.map(item => item.id === action.payload ? { ...item, quantity: item.quantity - 1 } : item) };
+        }
+        case 'CLEAR_CART': return { ...state, items: [] };
+        default: return state;
+      }
+    };
+
+    const CartContext = React.createContext(null);
+
+    const CartProvider = ({ children }) => {
+      const [cartState, dispatch] = React.useReducer(cartReducer, { items: [] });
+      React.useEffect(() => {
+        const saved = localStorage.getItem('eco_cart');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            dispatch({ type: 'CLEAR_CART' });
+            parsed.items.forEach(item => {
+              for (let i = 0; i < item.quantity; i++) dispatch({ type: 'ADD_ITEM', payload: { id: item.id, name: item.name, price: item.price, image: item.image, bgColor: item.bgColor } });
+            });
+          } catch(e) {}
+        }
+      }, []);
+      React.useEffect(() => { localStorage.setItem('eco_cart', JSON.stringify({ items: cartState.items })); }, [cartState.items]);
+      const totalItems = React.useMemo(() => cartState.items.reduce((sum, i) => sum + i.quantity, 0), [cartState.items]);
+      const totalPrice = React.useMemo(() => cartState.items.reduce((sum, i) => sum + i.price * i.quantity, 0), [cartState.items]);
+      return <CartContext.Provider value={{ cart: cartState.items, dispatch, totalItems, totalPrice }}>{children}</CartContext.Provider>;
+    };
+
+    const ProductCard = React.memo(({ product, onAdd }) => (
+      <div className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition">
+        <ProductImage src={product.image} alt={product.name} bgColor={product.bgColor} name={product.name} />
+        <h3 className="font-medium text-lg">{product.name}</h3>
+        <p className="text-gray-500 text-sm">{product.origin}</p>
+        <p className="text-gray-500 mb-3 mt-1">{product.price} ₽ / кг</p>
+        <button onClick={() => onAdd(product)} className="w-full bg-black text-white py-2 rounded-lg">В корзину</button>
+      </div>
+    ));
+
+    const Catalog = () => {
+      const [search, setSearch] = React.useState('');
+      const [category, setCategory] = React.useState('all');
+      const [sort, setSort] = React.useState('default');
+      const { dispatch } = React.useContext(CartContext);
+      const addToCart = React.useCallback((product) => { dispatch({ type: 'ADD_ITEM', payload: { id: product.id, name: product.name, price: product.price, image: product.image, bgColor: product.bgColor } }); }, [dispatch]);
+      const filtered = React.useMemo(() => {
+        let result = [...PRODUCTS];
+        if (category !== 'all') result = result.filter(p => p.category === category);
+        if (search.trim()) result = result.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+        if (sort === 'price_asc') result.sort((a,b) => a.price - b.price);
+        if (sort === 'price_desc') result.sort((a,b) => b.price - a.price);
+        if (sort === 'name_asc') result.sort((a,b) => a.name.localeCompare(b.name));
+        return result;
+      }, [category, search, sort]);
+      return (
+        <div>
+          <div className="flex flex-wrap gap-3 mb-8 justify-between items-center">
+            <h2 className="text-2xl font-semibold">Продукты</h2>
+            <div className="flex gap-2 flex-wrap">
+              <input type="text" placeholder="🔍 Поиск" value={search} onChange={e => setSearch(e.target.value)} className="border rounded-xl px-3 py-1 text-sm" />
+              <select value={category} onChange={e => setCategory(e.target.value)} className="border rounded-xl px-2 py-1 text-sm">
+                <option value="all">Все</option><option value="beef">Говядина</option><option value="pork">Свинина</option><option value="poultry">Птица</option><option value="lamb">Баранина</option>
+              </select>
+              <select value={sort} onChange={e => setSort(e.target.value)} className="border rounded-xl px-2 py-1 text-sm">
+                <option value="default">По умолчанию</option><option value="price_asc">Цена ↑</option><option value="price_desc">Цена ↓</option><option value="name_asc">Название А-Я</option>
+              </select>
+            </div>
+          </div>
+          {filtered.length === 0 ? <p className="text-center py-10 text-gray-500">Ничего не найдено</p> : (
+            <div className="grid md:grid-cols-3 gap-6">{filtered.map(p => <ProductCard key={p.id} product={p} onAdd={addToCart} />)}</div>
+          )}
+        </div>
+      );
+    };
+
+    const CartSidebar = ({ isOpen, onClose }) => {
+      const { cart, dispatch, totalItems, totalPrice } = React.useContext(CartContext);
+      React.useEffect(() => { if (isOpen) document.body.classList.add('no-scroll'); else document.body.classList.remove('no-scroll'); return () => document.body.classList.remove('no-scroll'); }, [isOpen]);
+      if (!isOpen) return null;
+      return (
+        <>
+          <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose}></div>
+          <div className="fixed top-0 right-0 w-96 h-full bg-white shadow-xl z-50 p-5 flex flex-col">
+            <div className="flex justify-between items-center border-b pb-3"><h2 className="text-2xl font-bold">Корзина ({totalItems})</h2><button onClick={onClose} className="text-2xl">&times;</button></div>
+            <div className="flex-1 overflow-auto my-4 space-y-3">
+              {cart.length === 0 && <p className="text-center text-gray-400">Пусто</p>}
+              {cart.map(item => (
+                <div key={item.id} className="flex gap-3 items-center bg-gray-50 p-2 rounded">
+                  <div className="w-12 h-12 rounded bg-gray-300 flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: item.bgColor || '#9ca3af' }}>{item.name[0]}</div>
+                  <div className="flex-1"><div>{item.name}</div><div className="flex gap-2 mt-1"><button onClick={() => dispatch({ type: 'DECREASE', payload: item.id })} className="px-2 bg-gray-200 rounded">-</button><span>{item.quantity}</span><button onClick={() => dispatch({ type: 'INCREASE', payload: item.id })} className="px-2 bg-gray-200 rounded">+</button><button onClick={() => dispatch({ type: 'REMOVE_ITEM', payload: item.id })} className="text-red-500 text-sm">удалить</button></div></div>
+                  <div>{item.price * item.quantity} ₽</div>
+                </div>
+              ))}
+            </div>
+            <div className="border-t pt-3"><div className="flex justify-between font-bold">Итого: {totalPrice} ₽</div><button onClick={() => dispatch({ type: 'CLEAR_CART' })} className="mt-2 w-full border py-2 rounded">Очистить</button></div>
+          </div>
+        </>
+      );
+    };
+
+    const CartButton = () => {
+      const { totalItems } = React.useContext(CartContext);
+      const [open, setOpen] = React.useState(false);
+      return (<><div className="relative flex items-center gap-2 cursor-pointer" onClick={() => setOpen(true)}><span className="text-sm font-medium">Корзина</span><div className="relative text-xl">🛒{totalItems > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">{totalItems}</span>}</div></div><CartSidebar isOpen={open} onClose={() => setOpen(false)} /></>);
+    };
+
+    const RootApp = () => {
+      const [cartButtonContainer, setCartButtonContainer] = React.useState(null);
+      React.useEffect(() => { setCartButtonContainer(document.getElementById('cart-button-container')); }, []);
+      return (<CartProvider><Catalog />{cartButtonContainer && ReactDOM.createPortal(<CartButton />, cartButtonContainer)}</CartProvider>);
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('catalog-root'));
+    root.render(<RootApp />);
+  </script>
+</body>
+</html>
